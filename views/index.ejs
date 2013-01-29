@@ -1,0 +1,29 @@
+<html>
+<head>
+  <title>Email Queue List</title>
+<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Subject</th>
+      <th>Body</th>
+      <th>Delay</th>
+    </tr>
+    <% for(var email in emailList) { %>
+      <tr>
+        <td><%= email.delayKey %></td>
+        <td><%= email.from %></td>
+        <td><%= email.to %></td>
+        <td><%= email.subject %></td>
+        <td><%= email.body %></td>
+        <td><%= email.delayTime %></td>
+      </tr>
+    <% } %>
+  </table>
+</body>
+</html>
