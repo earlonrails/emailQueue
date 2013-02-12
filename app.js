@@ -39,7 +39,6 @@ app.post('/email', function(req, res){
       envelope    = { 'body' : body, 'from' : from, 'to' : to, 'subject' : subject, 'delayTime' : delayTime, 'queueIndex' :  queue.length, 'delayKey' : (queue.length + new Date().valueOf()) };
       envelope.delayObject = emailQueue.delay(delayTime, function(){
         emailQueue.mail(envelope);
-        console.log("Stopping by key");
         stopByKey(envelope.delayKey);
       });
       queue.push(envelope);
