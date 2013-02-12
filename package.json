@@ -16,7 +16,6 @@
 
   "dependencies": {
     "express": "3.x",
-    "redis": "0.7.2",
     "jasmine-node" : "1.0.28",
     "ejs" : "0.8.3"
   },
