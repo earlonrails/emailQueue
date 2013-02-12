@@ -1,9 +1,7 @@
 var fs             = require('fs'),
     path           = require('path'),
-    redis          = require('redis'),
     express        = require('express'),
     emailQueue     = require('./lib/emailQueue'),
-    redisClient    = redis.createClient(),
     app            = express();
 
 var PUBLIC_DIR = path.dirname(__filename) + '/public',
@@ -15,18 +13,18 @@ var port      = process.argv[2] || '8000',
                 cert: fs.readFileSync(SHARED_DIR + '/server.crt')
     },
     protocol  = secure ? 'https' : 'http',
-    queue     = []
-    emailList = [];
+    queue     = [];
 
-var getEmailList = function(callback){
-  redisClient.hgetall("email", function(err, res){
-    var items = [];
-    for(i in res){
-      items.push(JSON.parse(res[i]));
+var stopByKey = function(key){
+  for (var i = 0; i < queue.length; i++){
+    var envelope = queue[i];
+    if (envelope.delayKey == key){
+      clearTimeout(queue[envelope.queueIndex].delayObject);
+      queue.splice(i, 1);
+      return true;
     }
-    console.dir(items);
-    callback(items);
-  });
+  }
+  return false
 };
 
 app.use(express.bodyParser());
@@ -38,37 +36,35 @@ app.post('/email', function(req, res){
       to          = req.param('to', null),
       subject     = req.param('subject', null),
       delayTime   = req.param('delayTime', null),
-      envelope    = { 'body' : body, 'from' : from, 'to' : to, 'subject' : subject, 'delayTime' : delayTime, 'queueIndex' :  queue.length, 'delayKey' : (queue.length + new Date().valueOf()) },
-      delayObject = emailQueue.delay(delayTime, function(){
-        queue.slice(envelope.queueIndex);
+      envelope    = { 'body' : body, 'from' : from, 'to' : to, 'subject' : subject, 'delayTime' : delayTime, 'queueIndex' :  queue.length, 'delayKey' : (queue.length + new Date().valueOf()) };
+      envelope.delayObject = emailQueue.delay(delayTime, function(){
         emailQueue.mail(envelope);
-        redisClient.hdel("email", envelope.delayKey, redis.print);
+        console.log("Stopping by key");
+        stopByKey(envelope.delayKey);
       });
-      queue.push(delayObject);
-
-  redisClient.hset("email", envelope.delayKey, JSON.stringify(envelope), redis.print);
+      queue.push(envelope);
   res.send(String(envelope.delayKey));
+});
+
+app.get('/stop_by_idx', function(req, res){
+  var queueIndex = req.param('queueIndex', null);
+  clearTimeout(queue[queueIndex].delayObject);
+  queue.splice(queueIndex, 1);
+  res.redirect('/email_list');
 });
 
 app.get('/stop', function(req, res){
   var delayKey = req.param('delayKey', null);
-  redisClient.hmget("email", delayKey, function(err, ele){
-    if (err) {
-      console.log(err);
-    } else {
-      var envelope = JSON.parse(ele);
-      clearTimeout(queue[envelope.queueIndex]);
-      redisClient.hdel("email", envelope.delayKey, redis.print);
-    }
-  });
+  var foundKey = stopByKey(delayKey);
+  if (foundKey){
+    res.render('success');
+  } else {
+    res.render('failure');
+  }
 });
 
 app.get('/email_list', function(req, res){
-  getEmailList(function(list){
-    emailList = list;
-  });
-  console.log(emailList);
-  res.render('index', { emailList : emailList, test : "test" });
+  res.render('index', { emailList : queue, test : "test" });
 });
 
 app.listen(Number(port));

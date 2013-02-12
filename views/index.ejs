@@ -19,10 +19,9 @@
         <th>Delay</th>
         <th>Delete</th>
       </tr>
-
-      <%= JSON.stringify(test) %>
-      <%= JSON.stringify(emailList) %>
-      <% for(var email in emailList) { %>
+      <% for(i in emailList) {
+           email = emailList[i];
+      %>
         <tr>
           <td><%= email.delayKey %></td>
           <td><%= email.from %></td>
@@ -30,7 +29,7 @@
           <td><%= email.subject %></td>
           <td><%= email.body %></td>
           <td><%= email.delayTime %></td>
-          <td><a class="btn btn-danger" href="/stop?id=<%= email.delaykey %>"></a></td>
+          <td><a class="btn btn-danger" href="/stop?delayKey=<%= email.delayKey %>">Delete</a></td>
         </tr>
       <% } %>
     </table>
