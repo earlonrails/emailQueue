@@ -16,15 +16,17 @@ var port      = process.argv[2] || '8000',
     queue     = [];
 
 var stopByKey = function(key){
+  keyFound = false;
   for (var i = 0; i < queue.length; i++){
     var envelope = queue[i];
-    if (envelope.delayKey == key){
+    if (keyFound) {
+      envelope.queueIndex --;
+    } else if (envelope.delayKey == key){
+      keyFound = true;
       clearTimeout(queue[envelope.queueIndex].delayObject);
       queue.splice(i, 1);
-      return true;
     }
   }
-  return false
 };
 
 app.use(express.bodyParser());
@@ -49,6 +51,11 @@ app.get('/stop_by_idx', function(req, res){
   var queueIndex = req.param('queueIndex', null);
   clearTimeout(queue[queueIndex].delayObject);
   queue.splice(queueIndex, 1);
+  var updateArray = queue.slice(queueIndex, queue.length)
+  for(idx in updateArray){
+    var notRemovedElement = updateArray[idx];
+    notRemovedElement.queueIndex --;
+  }
   res.redirect('/email_list');
 });
 
