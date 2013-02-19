@@ -1,5 +1,5 @@
-// var spec_helper = require('./specHelper.js');
-var emailQueue = require('../src/emailQueue.js');
+var specHelper = require('./specHelper.js'),
+    emailQueue = specHelper.emailQueue;
 
 describe("emailQueue Server", function() {
   beforeEach(function() {

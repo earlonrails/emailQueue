@@ -1,7 +1,3 @@
-var emailQueue  = require(''),
-    mailCommand = require(''),
-    delay = require('');
+var emailQueue = require('../lib/emailQueue');
 
-exports.emailQueue = emailQueue;
-exports.mailCommand = mailCommand;
-exports.delay = delay;
+exports.emailQueue = emailQueue

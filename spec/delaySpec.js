@@ -1,16 +1,19 @@
-// var spec_helper = require('./specHelper.js');
-var emailQueue = require('../src/emailQueue.js');
+var specHelper = require('./specHelper.js'),
+    emailQueue = specHelper.emailQueue;
 
 describe("delay", function() {
-  beforeEach(function() {
-
-  });
+  var called;
 
   it('should delay the execution of a function.', function() {
-
-  });
-
-  it('should delay the execution many functions.', function() {
-
+    runs(function(){
+      called = false;
+      emailQueue.delay(1000, function(){
+        called = true;
+      });
+    });
+    waitsFor(function(){ return called; }, "The function should have been called", 1005);
+    runs(function(){
+      expect(called).toBeTruthy();
+    });
   });
 });
